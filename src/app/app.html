@@ -4,6 +4,8 @@
 
 	<p>Signed in as {{ current_user_name() }}</p>
 
+	<p>{{ display_data() }}</p>
+
 	<form>
 		<input type="text" name="message_to_send" [(ngModel)]="message_to_send" />
 		<button (click)="sendMessage()">></button>

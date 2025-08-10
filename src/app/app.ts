@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from "firebase/auth";
+import { getData } from './backend';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -33,6 +34,8 @@ export class App {
 	message_to_send = '';
 	messages = signal<Message[]>([]);
 
+	display_data = signal('')
+
 	constructor() {
 		onAuthStateChanged(auth, (user) => {
 			if (user) {
@@ -49,7 +52,12 @@ export class App {
 			return;
 		}
 
-		
+		var data = await getData();
+
+		if (data) {
+			console.log("Got data", data)
+			this.display_data.set(JSON.stringify(data))
+		}
 	}
 
 	async sendMessage() {
