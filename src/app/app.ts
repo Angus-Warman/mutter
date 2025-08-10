@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut } from "firebase/auth";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
 import { getData } from './backend';
 
 const firebaseConfig = {
@@ -17,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
+getRedirectResult(auth).catch(e => { console.log(e) })
 
 const provider = new GoogleAuthProvider();
 
@@ -83,7 +84,11 @@ export class App {
 			return;
 		}
 
-		await signInWithRedirect(auth, provider);
+		signInWithPopup(auth, provider).catch(e => {
+			console.log(e);
+
+			signInWithRedirect(auth, provider)
+		});
 	}
 
 	signOut() {
