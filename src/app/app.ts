@@ -31,7 +31,7 @@ export class App {
 
 	current_user: User | null = null;
 	message_to_send = '';
-	messages: Message[] = [];
+	messages = signal<Message[]>([]);
 
 	constructor() {
 		onAuthStateChanged(auth, (user) => {
@@ -39,7 +39,17 @@ export class App {
 				this.current_user = user
 				this.current_user_name.set(user.displayName ?? user.uid)
 			}
+
+			this.backgroundRefresh()
 		})
+	}
+
+	async backgroundRefresh() {
+		if (!this.current_user) {
+			return;
+		}
+
+		
 	}
 
 	async sendMessage() {
@@ -47,8 +57,12 @@ export class App {
 			return;
 		}
 
-		var message = new Message(this.current_user, Date.now(), this.message_to_send);
-		this.messages.push(message)
+		var newMessage = new Message(this.current_user, Date.now(), this.message_to_send);
+		
+		this.messages.update(values => {
+			return [...values, newMessage];
+		});
+
 		this.message_to_send = ''
 	}
 

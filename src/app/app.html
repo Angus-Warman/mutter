@@ -10,9 +10,9 @@
 	</form>
 
 	<ul>
-		@for (message of messages; track $index) {
+		@for (message of messages(); track $index) {
 			<li>
-				<p>{{ message.author }} {{ message.sent }} {{ message.content }}</p>
+				<p>{{ message.author.displayName }} {{ message.sent }} {{ message.content }}</p>
 			</li>
 		}
 	</ul>
