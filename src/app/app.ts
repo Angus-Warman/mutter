@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User, signOut } from "firebase/auth";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut } from "firebase/auth";
 import { getData } from './backend';
 
 const firebaseConfig = {
@@ -42,7 +42,11 @@ export class App {
 				this.current_user = user
 				this.current_user_name.set(user.displayName ?? user.uid)
 			}
-
+			else {
+				this.current_user = null
+				this.current_user_name.set('')
+			}
+			
 			this.backgroundRefresh()
 		})
 	}
@@ -79,7 +83,7 @@ export class App {
 			return;
 		}
 
-		await signInWithPopup(auth, provider);
+		await signInWithRedirect(auth, provider);
 	}
 
 	signOut() {
