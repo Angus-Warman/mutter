@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User, signOut } from "firebase/auth";
 import { getData } from './backend';
 
 const firebaseConfig = {
@@ -80,6 +80,10 @@ export class App {
 		}
 
 		await signInWithPopup(auth, provider);
+	}
+
+	signOut() {
+		signOut(auth)
 	}
 }
 
