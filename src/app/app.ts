@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -27,37 +27,46 @@ const provider = new GoogleAuthProvider();
 })
 
 export class App {
-	protected readonly title = signal('mutter');
+	current_user_name = signal(''); // Uses a signal, user is set automatically and async during launch which does not display until first UI interaction
 
-	current_user = '';
+	current_user: User | null = null;
 	message_to_send = '';
 	messages: Message[] = [];
 
+	constructor() {
+		onAuthStateChanged(auth, (user) => {
+			if (user) {
+				this.current_user = user
+				this.current_user_name.set(user.displayName ?? user.uid)
+			}
+		})
+	}
+
 	async sendMessage() {
+		if (!this.current_user) {
+			return;
+		}
+
 		var message = new Message(this.current_user, Date.now(), this.message_to_send);
 		this.messages.push(message)
 		this.message_to_send = ''
 	}
 
 	async signIn() {
-		const result = await signInWithPopup(auth, provider);
-		const credential = GoogleAuthProvider.credentialFromResult(result);
-
-		if (credential) {
-			const token = credential.accessToken;
-			const user = result.user;
-			this.current_user = user.displayName ?? "Anon";
+		if (this.current_user) {
+			return;
 		}
 
+		await signInWithPopup(auth, provider);
 	}
 }
 
 class Message {
-	author: string;
+	author: User;
 	sent: number;
 	content: string;
 
-	constructor(author: string, sent: number, content: string) {
+	constructor(author: User, sent: number, content: string) {
 		this.author = author;
 		this.sent = sent;
 		this.content = content;
