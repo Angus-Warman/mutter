@@ -1,5 +1,7 @@
 <main class="main">
   <div class="content">
+	<button (click)="signIn()">Sign In</button>
+
 	<form>
 		<input type="text" name="message_to_send" [(ngModel)]="message_to_send" />
 		<button (click)="sendMessage()">></button>
