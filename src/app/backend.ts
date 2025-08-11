@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, CollectionReference, DocumentReference } from "firebase/firestore"; 
+import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, CollectionReference, DocumentReference,  } from "firebase/firestore"; 
 import { generatePushID } from "./id";
 
 const firebaseConfig = {
@@ -18,6 +18,8 @@ const auth = getAuth(app);
 
 const db = getFirestore(app);
 
+getRedirectResult(auth).catch(e => { console.log(e) })
+
 export class Message {
 	author: string;
 	text: string;
@@ -30,6 +32,37 @@ export class Message {
 	}
 }
 
+const provider = new GoogleAuthProvider();
+
+export async function signInn() {
+	if (auth.currentUser) {
+		return;
+	}
+
+	try {
+		await signInWithPopup(auth, provider)
+	}
+	catch (e) {
+		console.error(e)
+		signInWithRedirect(auth, provider)
+	}
+}
+
+export function signOutt() {
+	signOut(auth);
+}
+
+export function subscribeToUsername(callback: (username: string) => void) {
+	onAuthStateChanged(auth, (user) => {
+		if (user) {
+			let displayName = user.displayName ?? `User-${user.uid}`
+			callback(displayName)
+		} else {
+			callback('')
+		}
+	});
+}
+
 function getConversation() {
 	const collectionName = "conversations"
 	const conversationName = "shared"
@@ -38,7 +71,7 @@ function getConversation() {
 	return collectionRef
 }
 
-export function subscribe(callback: (message: Message) => void) {
+export function subscribeToNewMessage(callback: (message: Message) => void) {
 	const conversation = getConversation();
 
 	onSnapshot(conversation, snapshot => {
@@ -66,35 +99,9 @@ export async function createMessage(text: string) {
 	await setDoc(messageRef, { author, text });
 }
 
-export async function getMessages():  Promise<Message[]> {
-	const conversation = getConversation();
+onAuthStateChanged(auth, (_) => registerProfile())
 
-	const messagesSnapshot = await getDocs(conversation);
-
-	return messagesSnapshot.docs.map(doc => new Message(doc.id, doc.get('author'), doc.get('text')));
-}
-
-export async function getData() {
-	if (!auth.currentUser) {
-		console.log("Not logged in")
-		return null;
-	}
-
-	const collectionName = "test"
-	const docName = "test"
-	const docRef = doc(db, collectionName, docName)
-	const document = await getDoc(docRef)
-
-	if (document.exists()) {
-		return document.data();
-	}
-	else {
-		console.log("Failed to get document")
-		return null;
-	}
-}
-
-export async function registerProfile() {
+async function registerProfile() {
 	if (!auth.currentUser) {
 		return;
 	}

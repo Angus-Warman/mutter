@@ -3,12 +3,10 @@
 	<button (click)="signIn()">Sign In</button>
 	<button (click)="signOut()">Sign Out</button>
 
-	<p>Signed in as {{ current_user_name() }}</p>
-
-	<p>{{ display_data() }}</p>
+	<p>Signed in as {{ username() }}</p>
 
 	<form>
-		<input type="text" name="message_to_send" [(ngModel)]="message_to_send" />
+		<input type="text" name="textToSend" [(ngModel)]="textToSend" />
 		<button (click)="sendMessage()">></button>
 	</form>
 
