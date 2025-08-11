@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs } from "firebase/firestore"; 
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot } from "firebase/firestore"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -17,20 +17,6 @@ const auth = getAuth(app);
 
 const db = getFirestore(app);
 
-export async function createMessage(text: string) {
-	if (!auth.currentUser) {
-		return;
-	}
-	
-	const collectionName = "conversations"
-	const conversationName = "shared"
-	const messagesName = "messages"
-	const collectionRef = collection(db, collectionName, conversationName, messagesName)
-	const messageRef = doc(collectionRef)
-	const author = auth.currentUser.uid
-	await setDoc(messageRef, { author, text });
-}
-
 export class Message {
 	author: string | null;
 	text: string;
@@ -41,15 +27,46 @@ export class Message {
 	}
 }
 
-export async function getMessages():  Promise<Message[]> {
+function getConversation() {
 	const collectionName = "conversations"
 	const conversationName = "shared"
 	const messagesName = "messages"
 	const collectionRef = collection(db, collectionName, conversationName, messagesName)
+	return collectionRef
+}
 
-	const messagesSnapshot = await getDocs(collectionRef);
+export function subscribe(callback: (message: Message) => void) {
+	const conversation = getConversation();
 
-	return messagesSnapshot.docs.map(doc => doc.data())
+	onSnapshot(conversation, snapshot => {
+		snapshot.docChanges().forEach(change => {
+			if (change.type == "added") {
+				const data = change.doc.data();
+				const message = new Message(data['author'], data['text']);
+				callback(message);
+			}
+		});
+	});
+}
+
+export async function createMessage(text: string) {
+	if (!auth.currentUser) {
+		return;
+	}
+	
+	const conversation = getConversation();
+	const messageRef = doc(conversation)
+	const author = auth.currentUser.uid
+	await setDoc(messageRef, { author, text });
+}
+
+export async function getMessages():  Promise<Message[]> {
+	const conversation = getConversation();
+
+	const messagesSnapshot = await getDocs(conversation);
+
+	return messagesSnapshot.docs.sort((a, b) => a.id.localeCompare(b.id))
+								.map(doc => doc.data())
 								.map(data => new Message(data['author'], data['text']));
 }
 

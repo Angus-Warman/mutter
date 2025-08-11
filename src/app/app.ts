@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
-import { createMessage, getData, getMessages, Message } from './backend';
+import { createMessage, getData, getMessages, Message, subscribe } from './backend';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -48,8 +48,16 @@ export class App {
 				this.current_user_name.set('')
 			}
 			
-			this.backgroundRefresh()
+			// this.backgroundRefresh()
+
+			subscribe(this.addMessage.bind(this)) // ensure that "this" still has access to this.messages
 		})
+	}
+	
+	addMessage(newMessage: Message) {
+		this.messages.update(values => {
+			return [...values, newMessage];
+		});
 	}
 
 	async backgroundRefresh() {
@@ -72,9 +80,9 @@ export class App {
 		const message_text = this.message_to_send;
 		var newMessage = new Message(this.current_user.displayName, message_text);
 		
-		this.messages.update(values => {
-			return [...values, newMessage];
-		});
+		// this.messages.update(values => {
+		// 	return [...values, newMessage];
+		// });
 
 		this.message_to_send = ''
 
