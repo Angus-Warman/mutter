@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {FormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
-import { getData } from './backend';
+import { createMessage, getData, getMessages, Message } from './backend';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -57,11 +57,10 @@ export class App {
 			return;
 		}
 
-		var data = await getData();
+		var messages = await getMessages();
 
-		if (data) {
-			console.log("Got data", data)
-			this.display_data.set(JSON.stringify(data))
+		if (messages) {
+			this.messages.set(messages);
 		}
 	}
 
@@ -70,13 +69,16 @@ export class App {
 			return;
 		}
 
-		var newMessage = new Message(this.current_user, Date.now(), this.message_to_send);
+		const message_text = this.message_to_send;
+		var newMessage = new Message(this.current_user.displayName, message_text);
 		
 		this.messages.update(values => {
 			return [...values, newMessage];
 		});
 
 		this.message_to_send = ''
+
+		await createMessage(message_text)
 	}
 
 	async signIn() {
@@ -84,26 +86,16 @@ export class App {
 			return;
 		}
 
-		signInWithPopup(auth, provider).catch(e => {
-			console.log(e);
-
+		try {
+			await signInWithPopup(auth, provider)
+		}
+		catch (e) {
+			console.error(e)
 			signInWithRedirect(auth, provider)
-		});
+		}
 	}
 
 	signOut() {
 		signOut(auth)
-	}
-}
-
-class Message {
-	author: User;
-	sent: number;
-	content: string;
-
-	constructor(author: User, sent: number, content: string) {
-		this.author = author;
-		this.sent = sent;
-		this.content = content;
 	}
 }

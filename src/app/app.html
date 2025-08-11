@@ -15,7 +15,7 @@
 	<ul>
 		@for (message of messages(); track $index) {
 			<li>
-				<p>{{ message.author.displayName }} {{ message.sent }} {{ message.content }}</p>
+				<p>{{ message.author }} {{ message.text }}</p>
 			</li>
 		}
 	</ul>
