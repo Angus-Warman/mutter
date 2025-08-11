@@ -71,20 +71,26 @@ function getConversation() {
 	return collectionRef
 }
 
-export function subscribeToNewMessage(callback: (message: Message) => void) {
+export function subscribeToMessages(callback: (messages: Message[]) => void) {
 	const conversation = getConversation();
 
-	onSnapshot(conversation, snapshot => {
-		snapshot.docChanges().forEach(async change => {
+	onSnapshot(conversation, async snapshot => {
+		const messages: Message[] = [];
+
+		const changes = snapshot.docChanges();
+
+		for (const change of changes) {
 			if (change.type == "added") {
 				const authorID = change.doc.get('author')
 				const author = await tryGetDisplayName(authorID)
 				const text = change.doc.get('text')
 
 				const message = new Message(change.doc.id, author, text);
-				callback(message);
+				messages.push(message);
 			}
-		});
+		}
+
+		callback(messages);
 	});
 }
 

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { createMessage, subscribeToUsername, Message, signInn, signOutt, subscribeToNewMessage } from './backend';
+import { createMessage, subscribeToUsername, Message, signInn, signOutt, subscribeToMessages } from './backend';
 
 @Component({
 	selector: 'app-root',
@@ -20,12 +20,14 @@ export class App {
 			this.username.set(username)
 		})
 
-		subscribeToNewMessage(this.addMessage.bind(this)) // ensure that "this" still has access to this.messages
+		subscribeToMessages((messages) => {
+			this.addMessages(messages);
+		})
 	}
 	
-	addMessage(newMessage: Message) {
+	addMessages(newMessages: Message[]) {
 		this.messages.update(existingMessages => {
-			var messages = [...existingMessages, newMessage]
+			var messages = [...existingMessages, ...newMessages]
 			messages.sort((a, b) => a.id < b.id ? -1 : +1)
 			return messages;
 		});
