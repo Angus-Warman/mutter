@@ -15,7 +15,7 @@
 	<ul>
 		@for (message of messages(); track message.id) {
 			<li>
-				<p>{{ message.id}} {{ message.author }} {{ message.text }}</p>
+				<p>{{ message.author }}: {{ message.text }}</p>
 			</li>
 		}
 	</ul>

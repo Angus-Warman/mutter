@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot } from "firebase/firestore"; 
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, CollectionReference, DocumentReference } from "firebase/firestore"; 
+import { generatePushID } from "./id";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -60,7 +61,7 @@ export async function createMessage(text: string) {
 	}
 	
 	const conversation = getConversation();
-	const messageRef = doc(conversation)
+	const messageRef = createOrderedRef(conversation)
 	const author = auth.currentUser.uid
 	await setDoc(messageRef, { author, text });
 }
@@ -141,4 +142,10 @@ export async function tryGetDisplayName(uid: string) {
 	}
 
 	return fallback
+}
+
+function createOrderedRef(collectionRef: CollectionReference) : DocumentReference {
+	const id = generatePushID();
+	const docRef = doc(db, collectionRef.path, id)
+	return docRef;
 }
