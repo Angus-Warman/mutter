@@ -39,10 +39,13 @@ export function subscribe(callback: (message: Message) => void) {
 	const conversation = getConversation();
 
 	onSnapshot(conversation, snapshot => {
-		snapshot.docChanges().forEach(change => {
+		snapshot.docChanges().forEach(async change => {
 			if (change.type == "added") {
-				const data = change.doc.data();
-				const message = new Message(data['author'], data['text']);
+				const authorID = change.doc.get('author')
+				const author = await tryGetDisplayName(authorID)
+				const text = change.doc.get('text')
+
+				const message = new Message(author, text);
 				callback(message);
 			}
 		});
@@ -88,4 +91,54 @@ export async function getData() {
 		console.log("Failed to get document")
 		return null;
 	}
+}
+
+export async function registerProfile() {
+	if (!auth.currentUser) {
+		return;
+	}
+
+	const uid = auth.currentUser.uid
+	const displayName = auth.currentUser.displayName ?? `user-${auth.currentUser.uid}`
+
+	const collectionName = "profiles"
+	const profileRef = doc(db, collectionName, uid)
+
+	await setDoc(profileRef, { displayName })
+}
+
+async function getProfile(uid: string): Promise<string> {
+	const collectionName = "profiles"
+	const profileRef = doc(db, collectionName, uid)
+	const profile = await getDoc(profileRef)
+	return profile.get('displayName')
+}
+
+const displayNameCache = new Map<string, string>();
+
+export async function tryGetDisplayName(uid: string) {
+	let fallback = `User-${uid}`
+	
+	if (auth.currentUser?.uid == uid) {
+		return auth.currentUser.displayName ?? fallback
+	}
+
+	if (displayNameCache.has(uid)) {
+		return displayNameCache.get(uid) ?? fallback
+	}
+
+	// Get the profile from db
+	try {
+		const displayName = await getProfile(uid)
+
+		if (displayName) {
+			displayNameCache.set(uid, displayName);
+			return displayName
+		}
+	}
+	catch {
+		// Do nothing
+	}
+
+	return fallback
 }

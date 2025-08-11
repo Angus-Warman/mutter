@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
-import { createMessage, getData, getMessages, Message, subscribe } from './backend';
+import { createMessage, getData, getMessages, Message, registerProfile, subscribe } from './backend';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBHoXHWqQok9WDrHTiGFLoHtUGAU6e6gSc",
@@ -42,6 +42,7 @@ export class App {
 			if (user) {
 				this.current_user = user
 				this.current_user_name.set(user.displayName ?? user.uid)
+				registerProfile()
 			}
 			else {
 				this.current_user = null
