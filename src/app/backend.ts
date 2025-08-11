@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, User, signOut, signInWithPopup } from "firebase/auth";
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs, onSnapshot, CollectionReference, DocumentReference,  } from "firebase/firestore"; 
+import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut as firebaseSignOut, signInWithPopup } from "firebase/auth";
+import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, CollectionReference, DocumentReference,  } from "firebase/firestore"; 
 import { generatePushID } from "./id";
 
 const firebaseConfig = {
@@ -18,7 +18,7 @@ const auth = getAuth(app);
 
 const db = getFirestore(app);
 
-getRedirectResult(auth).catch(e => { console.log(e) })
+getRedirectResult(auth).catch(e => { alert(e) })
 
 export class Message {
 	author: string;
@@ -34,7 +34,7 @@ export class Message {
 
 const provider = new GoogleAuthProvider();
 
-export async function signInn() {
+export async function signIn() {
 	if (auth.currentUser) {
 		return;
 	}
@@ -48,8 +48,8 @@ export async function signInn() {
 	}
 }
 
-export function signOutt() {
-	signOut(auth);
+export function signOut() {
+	firebaseSignOut(auth);
 }
 
 export function subscribeToUsername(callback: (username: string) => void) {

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { createMessage, subscribeToUsername, Message, signInn, signOutt, subscribeToMessages } from './backend';
+import { createMessage, subscribeToUsername, Message, signIn, signOut, subscribeToMessages } from './backend';
 
 @Component({
 	selector: 'app-root',
@@ -40,11 +40,11 @@ export class App {
 		await createMessage(message_text)
 	}
 
-	async signIn() {
-		signInn();
+	signIn() {
+		signIn();
 	}
 
 	signOut() {
-		signOutt()
+		signOut()
 	}
 }
