@@ -56,8 +56,10 @@ export class App {
 	}
 	
 	addMessage(newMessage: Message) {
-		this.messages.update(values => {
-			return [...values, newMessage];
+		this.messages.update(existingMessages => {
+			var messages = [...existingMessages, newMessage]
+			messages.sort((a, b) => a.id < b.id ? -1 : +1)
+			return messages;
 		});
 	}
 
@@ -79,12 +81,6 @@ export class App {
 		}
 
 		const message_text = this.message_to_send;
-		var newMessage = new Message(this.current_user.displayName, message_text);
-		
-		// this.messages.update(values => {
-		// 	return [...values, newMessage];
-		// });
-
 		this.message_to_send = ''
 
 		await createMessage(message_text)

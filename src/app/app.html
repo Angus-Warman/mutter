@@ -13,7 +13,7 @@
 	</form>
 
 	<ul>
-		@for (message of messages(); track $index) {
+		@for (message of messages(); track message.id) {
 			<li>
 				<p>{{ message.author }} {{ message.text }}</p>
 			</li>

@@ -18,10 +18,12 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 export class Message {
-	author: string | null;
+	author: string;
 	text: string;
+	id: string;
 
-	constructor(author: string | null, text: string) {
+	constructor(id: string, author: string, text: string) {
+		this.id = id;
 		this.author = author;
 		this.text = text;
 	}
@@ -45,7 +47,7 @@ export function subscribe(callback: (message: Message) => void) {
 				const author = await tryGetDisplayName(authorID)
 				const text = change.doc.get('text')
 
-				const message = new Message(author, text);
+				const message = new Message(change.doc.id, author, text);
 				callback(message);
 			}
 		});
@@ -68,9 +70,7 @@ export async function getMessages():  Promise<Message[]> {
 
 	const messagesSnapshot = await getDocs(conversation);
 
-	return messagesSnapshot.docs.sort((a, b) => a.id.localeCompare(b.id))
-								.map(doc => doc.data())
-								.map(data => new Message(data['author'], data['text']));
+	return messagesSnapshot.docs.map(doc => new Message(doc.id, doc.get('author'), doc.get('text')));
 }
 
 export async function getData() {
